@@ -1,5 +1,6 @@
 import pygame
 
+
 class GameBoard:
     def __init__(self, rows, cols, cell_size, pos):
         self.rows = rows
@@ -8,6 +9,8 @@ class GameBoard:
         self.pos = pos
         self.grid = self.create_grid()
         self.occupied_cells = []
+        self.selected_cells = []
+        self.hit_cells = []
 
     def create_grid(self):
         start_x, start_y = self.pos
@@ -25,7 +28,16 @@ class GameBoard:
     def draw(self, screen):
         for row in self.grid:
             for cell in row:
-                pygame.draw.rect(screen, (255, 255, 255), (cell[0], cell[1], self.cell_size, self.cell_size), 1)
+                cell_rect = pygame.Rect(cell[0], cell[1], self.cell_size, self.cell_size)
+                pygame.draw.rect(screen, (255, 255, 255), cell_rect, 1)
+
+        for cell in self.selected_cells:
+            cell_rect = pygame.Rect(cell[0], cell[1], self.cell_size, self.cell_size)
+            pygame.draw.rect(screen, (255, 0, 0), cell_rect)
+
+        for cell in self.hit_cells:
+            cell_rect = pygame.Rect(cell[0], cell[1], self.cell_size, self.cell_size)
+            pygame.draw.rect(screen, (0, 255, 0), cell_rect)
 
     def get_cell(self, x, y):
         for row in self.grid:
@@ -61,8 +73,7 @@ class GameBoard:
             return False
 
         temp_rect = pygame.Rect(top_left_cell[0], top_left_cell[1], ship.rect.width, ship.rect.height)
-        expanded_rect = temp_rect.inflate(self.cell_size * 2, self.cell_size * 2) 
-
+        expanded_rect = temp_rect.inflate(self.cell_size * 2, self.cell_size * 2)
         for occupied in self.occupied_cells:
             if expanded_rect.colliderect(occupied):
                 return False
@@ -82,3 +93,9 @@ class GameBoard:
     def reset_occupied_cells(self):
         self.occupied_cells = []
 
+    def select_cell(self, x, y, opponent):
+        cell = self.get_cell(x, y)
+        if cell and cell not in self.selected_cells:
+            self.selected_cells.append(cell)
+            if opponent.is_hit(cell):
+                self.hit_cells.append(cell)

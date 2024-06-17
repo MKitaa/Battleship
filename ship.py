@@ -12,8 +12,9 @@ class Ship:
         self.vertical = True
         self.on_board = False
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, (0, 0, 255), self.rect)
+    def draw(self, screen, hidden=False):
+        if not hidden:
+            pygame.draw.rect(screen, (0, 0, 255), self.rect)
 
     def handle_event(self, event, game_board):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -39,6 +40,7 @@ class Ship:
                 self.rect.y = self.mouse_y + self.offset_y
 
     def reset_position(self):
+
         self.rect.topleft = self.initial_pos
         if not self.vertical:
             self.rotate(None, reset=True)
@@ -53,6 +55,16 @@ class Ship:
             self.reset_position()
         else:
             self.on_board = True
+
+    def get_cells(self):
+        cells = []
+        if self.vertical:
+            for i in range(self.rect.height // self.initial_height):
+                cells.append((self.rect.x, self.rect.y + i * self.initial_height))
+        else:
+            for i in range(self.rect.width // self.initial_width):
+                cells.append((self.rect.x + i * self.initial_width, self.rect.y))
+        return cells
 
 
 class ShipManager:
@@ -69,13 +81,14 @@ class ShipManager:
         ]
         return ships
 
-    def draw(self, screen):
+    def draw(self, screen, hidden=False):
         for ship in self.ships:
-            ship.draw(screen)
+            ship.draw(screen, hidden)
 
-    def handle_event(self, event, game_board):
-        for ship in self.ships:
-            ship.handle_event(event, game_board)
+    def handle_event(self, event, game_board, game_started):
+        if not game_started:
+            for ship in self.ships:
+                ship.handle_event(event, game_board)
 
     def randomize_ships(self, game_board):
         game_board.reset_occupied_cells()
@@ -108,3 +121,18 @@ class ShipManager:
 
             if not placed:
                 print(f"Could not place the ship after {max_attempts} attempts.")
+
+    def all_ships_placed(self):
+        return all(ship.on_board for ship in self.ships)
+
+    def is_hit(self, cell):
+        for ship in self.ships:
+            if ship.rect.collidepoint(cell[0], cell[1]):
+                return True
+        return False
+
+    def get_all_ship_cells(self):
+        all_cells = []
+        for ship in self.ships:
+            all_cells.extend(ship.get_cells())
+        return all_cells
