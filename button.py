@@ -1,5 +1,6 @@
 import pygame
 
+
 class Button:
     def __init__(self, x, y, width, height, text):
         self.rect = pygame.Rect(x, y, width, height)
@@ -28,4 +29,3 @@ class Button:
             if self.rect.collidepoint(event.pos):
                 return True
         return False
-
