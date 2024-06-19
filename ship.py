@@ -40,7 +40,6 @@ class Ship:
                 self.rect.y = self.mouse_y + self.offset_y
 
     def reset_position(self):
-
         self.rect.topleft = self.initial_pos
         if not self.vertical:
             self.rotate(None, reset=True)
@@ -68,16 +67,17 @@ class Ship:
 
 
 class ShipManager:
-    def __init__(self):
+    def __init__(self, cell_size):
+        self.cell_size = cell_size
         self.ships = self.create_ships()
 
     def create_ships(self):
         ships = [
-            Ship(50, 400, 25, 25),
-            Ship(100, 400, 25, 50),
-            Ship(150, 400, 25, 100),
-            Ship(200, 400, 25, 125),
-            Ship(250, 400, 25, 150)
+            Ship(50, 580, self.cell_size, self.cell_size),
+            Ship(150, 580, self.cell_size, self.cell_size * 2),
+            Ship(250, 580, self.cell_size, self.cell_size * 3),
+            Ship(350, 580, self.cell_size, self.cell_size * 4),
+            Ship(450, 580, self.cell_size, self.cell_size * 5)
         ]
         return ships
 

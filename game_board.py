@@ -74,6 +74,7 @@ class GameBoard:
 
         temp_rect = pygame.Rect(top_left_cell[0], top_left_cell[1], ship.rect.width, ship.rect.height)
         expanded_rect = temp_rect.inflate(self.cell_size * 2, self.cell_size * 2)
+
         for occupied in self.occupied_cells:
             if expanded_rect.colliderect(occupied):
                 return False
@@ -99,3 +100,6 @@ class GameBoard:
             self.selected_cells.append(cell)
             if opponent.is_hit(cell):
                 self.hit_cells.append(cell)
+
+    def is_hit(self, cell):
+        return any(occupied.collidepoint(cell[0], cell[1]) for occupied in self.occupied_cells)
