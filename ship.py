@@ -136,3 +136,4 @@ class ShipManager:
         for ship in self.ships:
             all_cells.extend(ship.get_cells())
         return all_cells
+
