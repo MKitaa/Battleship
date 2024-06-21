@@ -1,5 +1,6 @@
 import pygame
 
+
 class Slider:
     def __init__(self, x, y, width, height, min_val=0, max_val=1, initial_val=0.5):
         self.rect = pygame.Rect(x, y, width, height)
@@ -22,7 +23,8 @@ class Slider:
         elif event.type == pygame.MOUSEMOTION:
             if self.dragging:
                 self.slider_pos = max(self.rect.x, min(event.pos[0], self.rect.x + self.rect.width))
-                self.val = self.min_val + (self.slider_pos - self.rect.x) / self.rect.width * (self.max_val - self.min_val)
+                self.val = self.min_val + (self.slider_pos - self.rect.x) / self.rect.width * (
+                            self.max_val - self.min_val)
 
     def get_value(self):
         return self.val

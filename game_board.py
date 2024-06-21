@@ -1,6 +1,7 @@
 import pygame
 from fire_animation import FireAnimation
 
+
 class GameBoard:
     def __init__(self, rows, cols, cell_size, pos):
         self.rows = rows

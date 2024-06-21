@@ -1,4 +1,5 @@
 import pygame
+import sys
 
 
 class Menu:
@@ -9,7 +10,7 @@ class Menu:
         self.start_button = start_button
         self.exit_button = exit_button
         self.winner_message = ""
-        self.winner_color = (255, 255, 255)  # Default color white
+        self.winner_color = (255, 255, 255)
 
     def draw(self):
         self.screen.fill((0, 0, 0))
