@@ -44,7 +44,7 @@ class ShipManager:
                     ship.rect.width, ship.rect.height = (
                     ship.initial_width, ship.initial_height) if ship.vertical else (
                         ship.initial_height, ship.initial_width)
-                    ship.load_image()  # reload image to match orientation
+                    ship.load_image()  
                     if not ship.vertical:
                         ship.image = pygame.transform.rotate(ship.image, 90)
 

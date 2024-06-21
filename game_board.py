@@ -34,10 +34,6 @@ class GameBoard:
                 cell_rect = pygame.Rect(cell[0], cell[1], self.cell_size, self.cell_size)
                 pygame.draw.rect(screen, (255, 255, 255), cell_rect, 1)
 
-        for cell in self.selected_cells:
-            if cell not in self.hit_cells and cell not in self.miss_cells:
-                cell_rect = pygame.Rect(cell[0], cell[1], self.cell_size, self.cell_size)
-                pygame.draw.rect(screen, (255, 0, 0), cell_rect)
 
     def draw_hits(self, screen, hit_image, miss_image, is_player_board):
         if is_player_board:
