@@ -6,10 +6,10 @@ class Button:
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
         self.font = pygame.font.SysFont(None, 36)
-        self.color = (70, 130, 180)  # Steel blue color
-        self.hover_color = (100, 149, 237)  # Cornflower blue color
-        self.text_color = (255, 255, 255)  # White color
-        self.border_color = (255, 255, 255)  # White color
+        self.color = (70, 130, 180)
+        self.hover_color = (100, 149, 237)
+        self.text_color = (255, 255, 255)
+        self.border_color = (255, 255, 255)
 
     def draw(self, screen):
         mouse_pos = pygame.mouse.get_pos()

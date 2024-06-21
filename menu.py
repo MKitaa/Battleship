@@ -1,21 +1,35 @@
 import pygame
 
+
 class Menu:
-    def __init__(self, screen, image_path, button):
+    def __init__(self, screen, image_path, start_button, exit_button):
         self.screen = screen
-        self.image = pygame.image.load(image_path)
-        self.image = pygame.transform.scale(self.image, (1000, 840))
-        self.button = button
+        self.image = pygame.image.load(image_path).convert()
+        self.image = pygame.transform.scale(self.image, (1200, 852))
+        self.start_button = start_button
+        self.exit_button = exit_button
+        self.winner_message = ""
+        self.winner_color = (255, 255, 255)  # Default color white
 
     def draw(self):
-        self.draw_background()
+        self.screen.fill((0, 0, 0))
         self.screen.blit(self.image, (0, 0))
-        self.button.draw(self.screen)
+        self.start_button.draw(self.screen)
+        self.exit_button.draw(self.screen)
 
-    def draw_background(self):
-        for y in range(0, self.screen.get_height(), 2):
-            pygame.draw.line(self.screen, (0, 0, 0), (0, y), (self.screen.get_width(), y))
+        if self.winner_message:
+            font = pygame.font.SysFont(None, 74)
+            text = font.render(self.winner_message, True, self.winner_color)
+            self.screen.blit(text, (self.screen.get_width() // 2 - text.get_width() // 2, 100))
 
     def handle_event(self, event):
-        return self.button.is_clicked(event)
+        if self.start_button.is_clicked(event):
+            return True
+        if self.exit_button.is_clicked(event):
+            pygame.quit()
+            sys.exit()
+        return False
 
+    def set_winner_message(self, message, color):
+        self.winner_message = message
+        self.winner_color = color

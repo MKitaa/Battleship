@@ -1,20 +1,28 @@
 import pygame
 import random
 
-
 class Ship:
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, image_path):
         self.initial_pos = (x, y)
         self.initial_width = width
         self.initial_height = height
-        self.rect = pygame.Rect(x, y, width, height)
-        self.dragging = False
+        self.image_path = image_path
         self.vertical = True
         self.on_board = False
+        self.scale_factor = 0.9  # Zmniejszenie rozmiaru obrazów o 10%
+        self.load_image()
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.dragging = False
+
+    def load_image(self):
+        self.image = pygame.image.load(self.image_path).convert_alpha()
+        scaled_width = int(self.initial_width * self.scale_factor)
+        scaled_height = int(self.initial_height * self.scale_factor)
+        self.image = pygame.transform.scale(self.image, (scaled_width, scaled_height))
 
     def draw(self, screen, hidden=False):
         if not hidden:
-            pygame.draw.rect(screen, (0, 0, 255), self.rect)
+            screen.blit(self.image, self.rect.topleft)
 
     def handle_event(self, event, game_board):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -40,7 +48,6 @@ class Ship:
                 self.rect.y = self.mouse_y + self.offset_y
 
     def reset_position(self):
-
         self.rect.topleft = self.initial_pos
         if not self.vertical:
             self.rotate(None, reset=True)
@@ -49,7 +56,9 @@ class Ship:
     def rotate(self, game_board, reset=False):
         if not reset:
             self.vertical = not self.vertical
+        self.image = pygame.transform.rotate(self.image, 90)
         self.rect.width, self.rect.height = self.rect.height, self.rect.width
+        self.rect = self.image.get_rect(topleft=self.rect.topleft)
 
         if game_board and not game_board.adjust_ship_position(self):
             self.reset_position()
@@ -68,16 +77,17 @@ class Ship:
 
 
 class ShipManager:
-    def __init__(self):
+    def __init__(self, cell_size):
+        self.cell_size = cell_size
         self.ships = self.create_ships()
 
     def create_ships(self):
         ships = [
-            Ship(50, 400, 25, 25),
-            Ship(100, 400, 25, 50),
-            Ship(150, 400, 25, 100),
-            Ship(200, 400, 25, 125),
-            Ship(250, 400, 25, 150)
+            Ship(100, 670, self.cell_size, self.cell_size, "assets/ships/patrolBoat/patrolBoat.png"),
+            Ship(150, 670, self.cell_size, self.cell_size * 2, "assets/ships/cruiser/cruiser.png"),
+            Ship(200, 670, self.cell_size, self.cell_size * 3, "assets/ships/destroyer/destroyer.png"),
+            Ship(250, 670, self.cell_size, self.cell_size * 4, "assets/ships/submarine/submarine.png"),
+            Ship(300, 670, self.cell_size, self.cell_size * 5, "assets/ships/carrier/carrier.png")
         ]
         return ships
 
@@ -92,35 +102,43 @@ class ShipManager:
 
     def randomize_ships(self, game_board):
         game_board.reset_occupied_cells()
+        all_placed = False
 
-        for ship in self.ships:
-            placed = False
-            attempts = 0
-            max_attempts = 100
-            while not placed and attempts < max_attempts:
-                attempts += 1
-                ship.vertical = random.choice([True, False])
-                ship.rect.width, ship.rect.height = (ship.initial_width, ship.initial_height) if ship.vertical else (
-                ship.initial_height, ship.initial_width)
+        while not all_placed:
+            game_board.reset_occupied_cells()
+            all_placed = True
 
-                max_x = game_board.pos[0] + game_board.cols * game_board.cell_size - ship.rect.width
-                max_y = game_board.pos[1] + game_board.rows * game_board.cell_size - ship.rect.height
+            for ship in self.ships:
+                placed = False
+                max_attempts = 100
+                while not placed and max_attempts > 0:
+                    max_attempts -= 1
+                    ship.vertical = random.choice([True, False])
+                    ship.rect.width, ship.rect.height = (ship.initial_width, ship.initial_height) if ship.vertical else (
+                        ship.initial_height, ship.initial_width)
+                    ship.load_image()  # reload image to match orientation
+                    if not ship.vertical:
+                        ship.image = pygame.transform.rotate(ship.image, 90)
 
-                x = random.randint(game_board.pos[0], max_x)
-                y = random.randint(game_board.pos[1], max_y)
+                    potential_positions = [
+                        (x, y)
+                        for x in range(game_board.pos[0], game_board.pos[0] + game_board.cols * game_board.cell_size, game_board.cell_size)
+                        for y in range(game_board.pos[1], game_board.pos[1] + game_board.rows * game_board.cell_size, game_board.cell_size)
+                    ]
+                    random.shuffle(potential_positions)
 
-                x = (x // game_board.cell_size) * game_board.cell_size
-                y = (y // game_board.cell_size) * game_board.cell_size
+                    for x, y in potential_positions:
+                        ship.rect.topleft = (x, y)
+                        if game_board.ship_fits(ship, (x, y)):
+                            game_board.add_ship(ship)
+                            placed = True
+                            break
+                        else:
+                            ship.reset_position()
 
-                ship.rect.topleft = (x, y)
-                if game_board.ship_fits(ship, (x, y)):
-                    game_board.add_ship(ship)
-                    placed = True
-                else:
-                    ship.reset_position()
-
-            if not placed:
-                print(f"Could not place the ship after {max_attempts} attempts.")
+                if not placed:
+                    all_placed = False
+                    break
 
     def all_ships_placed(self):
         return all(ship.on_board for ship in self.ships)
@@ -136,4 +154,3 @@ class ShipManager:
         for ship in self.ships:
             all_cells.extend(ship.get_cells())
         return all_cells
-

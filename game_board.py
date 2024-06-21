@@ -1,5 +1,5 @@
 import pygame
-
+from fire_animation import FireAnimation
 
 class GameBoard:
     def __init__(self, rows, cols, cell_size, pos):
@@ -11,6 +11,8 @@ class GameBoard:
         self.occupied_cells = []
         self.selected_cells = []
         self.hit_cells = []
+        self.miss_cells = []
+        self.fire_animations = []
 
     def create_grid(self):
         start_x, start_y = self.pos
@@ -32,12 +34,27 @@ class GameBoard:
                 pygame.draw.rect(screen, (255, 255, 255), cell_rect, 1)
 
         for cell in self.selected_cells:
-            cell_rect = pygame.Rect(cell[0], cell[1], self.cell_size, self.cell_size)
-            pygame.draw.rect(screen, (255, 0, 0), cell_rect)
+            if cell not in self.hit_cells and cell not in self.miss_cells:
+                cell_rect = pygame.Rect(cell[0], cell[1], self.cell_size, self.cell_size)
+                pygame.draw.rect(screen, (255, 0, 0), cell_rect)
 
-        for cell in self.hit_cells:
-            cell_rect = pygame.Rect(cell[0], cell[1], self.cell_size, self.cell_size)
-            pygame.draw.rect(screen, (0, 255, 0), cell_rect)
+    def draw_hits(self, screen, hit_image, miss_image, is_player_board):
+        if is_player_board:
+            for fire in self.fire_animations:
+                fire.update()
+                fire.draw(screen)
+            for cell in self.miss_cells:
+                screen.blit(miss_image, cell)
+        else:
+            for cell in self.hit_cells:
+                screen.blit(hit_image, cell)
+            for cell in self.miss_cells:
+                screen.blit(miss_image, cell)
+
+    def draw_fire_animations(self, screen):
+        for fire in self.fire_animations:
+            fire.update()
+            fire.draw(screen)
 
     def get_cell(self, x, y):
         for row in self.grid:
@@ -74,6 +91,7 @@ class GameBoard:
 
         temp_rect = pygame.Rect(top_left_cell[0], top_left_cell[1], ship.rect.width, ship.rect.height)
         expanded_rect = temp_rect.inflate(self.cell_size * 2, self.cell_size * 2)
+
         for occupied in self.occupied_cells:
             if expanded_rect.colliderect(occupied):
                 return False
@@ -93,10 +111,18 @@ class GameBoard:
     def reset_occupied_cells(self):
         self.occupied_cells = []
 
-    def select_cell(self, x, y, opponent):
+    def select_cell(self, x, y, opponent, is_player_board):
         cell = self.get_cell(x, y)
         if cell and cell not in self.selected_cells:
             self.selected_cells.append(cell)
             if opponent.is_hit(cell):
                 self.hit_cells.append(cell)
+                if is_player_board:
+                    fire = FireAnimation(self.cell_size)
+                    fire.start(cell)
+                    self.fire_animations.append(fire)
+            else:
+                self.miss_cells.append(cell)
 
+    def is_hit(self, cell):
+        return any(occupied.collidepoint(cell[0], cell[1]) for occupied in self.occupied_cells)
